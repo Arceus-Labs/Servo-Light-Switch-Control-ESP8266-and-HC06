@@ -8,7 +8,7 @@ int offPos = 0;
 
 void setup() {
   Serial.begin(9600);
-  s.attach(14);      // D5 = GPIO14
+  s.attach(14);
   s.write(center);
 }
 
@@ -16,7 +16,7 @@ void loop() {
   if (Serial.available()) {
     String cmd = Serial.readString();
     cmd.trim();
-    cmd.toUpperCase();    // <<< this line makes it case-insensitive
+    cmd.toUpperCase();
 
     if (cmd == "OFF") {
       s.write(onPos);
