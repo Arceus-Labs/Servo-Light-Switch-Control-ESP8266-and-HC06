@@ -5,7 +5,7 @@ Servo s1;   // first servo
 Servo s2;   // second servo
 
 int center = 90;
-int onPos  = 170;
+int onPos  = 180;
 int offPos = 0;
 
 void setup() {
