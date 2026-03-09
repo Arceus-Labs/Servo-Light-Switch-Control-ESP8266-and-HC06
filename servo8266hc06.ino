@@ -4,127 +4,103 @@
 Servo s1;
 Servo s2;
 
+const int servo1Pin = 14;   // D5
+const int servo2Pin = 12;   // D6
+
 int center = 90;
 int onPos  = 180;
 int offPos = 0;
 
-bool btConnected = false;   // track HC06 activity
+bool btActive = false;
 
+
+// -------- Function to center both servos --------
 void centerServos() {
-  s1.attach(14);
-  s2.attach(12);
+
+  s1.attach(servo1Pin);
+  s2.attach(servo2Pin);
 
   s1.write(center);
   s2.write(center);
 
-  delay(400);
+  delay(250);
 
   s1.detach();
   s2.detach();
 }
 
+
+// -------- Function to toggle a servo --------
+void toggleServo(Servo &servo, int pin, int targetPos) {
+
+  servo.attach(pin);
+
+  servo.write(center);
+  delay(80);
+
+  servo.write(targetPos);
+  delay(200);
+
+  servo.write(center);
+  delay(80);
+
+  servo.detach();
+}
+
+
+// -------- Setup --------
 void setup() {
 
-  // 🔋 WiFi OFF
-  WiFi.mode(WIFI_OFF);
+  WiFi.mode(WIFI_OFF);          // disable WiFi
   WiFi.forceSleepBegin();
   delay(1);
 
   Serial.begin(9600);
+  Serial.setTimeout(50);        // prevent 1s blocking delay
 
-  s1.attach(14);
-  s2.attach(12);
-
-  s1.write(center);
-  s2.write(center);
-
-  delay(300);
-
-  s1.detach();
-  s2.detach();
+  centerServos();               // initial alignment
 }
 
+
+// -------- Main Loop --------
 void loop() {
 
   if (Serial.available()) {
 
-    // Detect first activity from HC06
-    if (!btConnected) {
-      centerServos();           // auto reset position
-      btConnected = true;
-      Serial.println("Bluetooth Connected - Servos Centered");
+    if (!btActive) {
+      centerServos();           // auto reset when bluetooth starts
+      btActive = true;
+      Serial.println("BT Connected - Servos Centered");
     }
 
     String cmd = Serial.readString();
     cmd.trim();
     cmd.toUpperCase();
 
-    // -------- Servo 1 --------
+
     if (cmd == "ONW") {
-
-      s1.attach(14);
-      s1.write(center);
-      delay(200);
-
-      s1.write(offPos);
-      delay(400);
-      s1.write(center);
-      delay(200);
-
-      s1.detach();
+      toggleServo(s1, servo1Pin, offPos);
       Serial.println("ONW done");
     }
 
-    if (cmd == "OFFW") {
-
-      s1.attach(14);
-      s1.write(center);
-      delay(200);
-
-      s1.write(onPos);
-      delay(400);
-      s1.write(center);
-      delay(200);
-
-      s1.detach();
+    else if (cmd == "OFFW") {
+      toggleServo(s1, servo1Pin, onPos);
       Serial.println("OFFW done");
     }
 
-    // -------- Servo 2 --------
-    if (cmd == "ONO") {
-
-      s2.attach(12);
-      s2.write(center);
-      delay(200);
-
-      s2.write(offPos);
-      delay(400);
-      s2.write(center);
-      delay(200);
-
-      s2.detach();
+    else if (cmd == "ONO") {
+      toggleServo(s2, servo2Pin, offPos);
       Serial.println("ONO done");
     }
 
-    if (cmd == "OFFO") {
-
-      s2.attach(12);
-      s2.write(center);
-      delay(200);
-
-      s2.write(onPos);
-      delay(400);
-      s2.write(center);
-      delay(200);
-
-      s2.detach();
+    else if (cmd == "OFFO") {
+      toggleServo(s2, servo2Pin, onPos);
       Serial.println("OFFO done");
     }
   }
 
-  // If Bluetooth inactive for long time reset flag
-  if (!Serial.available()) {
-    delay(5000);
-    btConnected = false;
+  else {
+    delay(3000);
+    btActive = false;           // reset bluetooth state
   }
 }
