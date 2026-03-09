@@ -1,42 +1,67 @@
 #include <ESP8266WiFi.h>
 #include <Servo.h>
 
-Servo s1;   // first servo
-Servo s2;   // second servo
+Servo s1;
+Servo s2;
 
 int center = 90;
 int onPos  = 180;
 int offPos = 0;
 
+bool btConnected = false;   // track HC06 activity
+
+void centerServos() {
+  s1.attach(14);
+  s2.attach(12);
+
+  s1.write(center);
+  s2.write(center);
+
+  delay(400);
+
+  s1.detach();
+  s2.detach();
+}
+
 void setup() {
-  // 🔋 Wi-Fi OFF (power saving)
+
+  // 🔋 WiFi OFF
   WiFi.mode(WIFI_OFF);
   WiFi.forceSleepBegin();
   delay(1);
 
   Serial.begin(9600);
 
-  s1.attach(14);   // D5
-  s2.attach(12);   // D6
+  s1.attach(14);
+  s2.attach(12);
 
   s1.write(center);
   s2.write(center);
 
   delay(300);
 
-  // 🔌 detach both after initial centering
   s1.detach();
   s2.detach();
 }
 
 void loop() {
+
   if (Serial.available()) {
+
+    // Detect first activity from HC06
+    if (!btConnected) {
+      centerServos();           // auto reset position
+      btConnected = true;
+      Serial.println("Bluetooth Connected - Servos Centered");
+    }
+
     String cmd = Serial.readString();
     cmd.trim();
     cmd.toUpperCase();
 
     // -------- Servo 1 --------
     if (cmd == "ONW") {
+
       s1.attach(14);
       s1.write(center);
       delay(200);
@@ -46,11 +71,12 @@ void loop() {
       s1.write(center);
       delay(200);
 
-      s1.detach();   // 🔋 power saved
+      s1.detach();
       Serial.println("ONW done");
     }
 
     if (cmd == "OFFW") {
+
       s1.attach(14);
       s1.write(center);
       delay(200);
@@ -66,6 +92,7 @@ void loop() {
 
     // -------- Servo 2 --------
     if (cmd == "ONO") {
+
       s2.attach(12);
       s2.write(center);
       delay(200);
@@ -80,6 +107,7 @@ void loop() {
     }
 
     if (cmd == "OFFO") {
+
       s2.attach(12);
       s2.write(center);
       delay(200);
@@ -92,5 +120,11 @@ void loop() {
       s2.detach();
       Serial.println("OFFO done");
     }
+  }
+
+  // If Bluetooth inactive for long time reset flag
+  if (!Serial.available()) {
+    delay(5000);
+    btConnected = false;
   }
 }
