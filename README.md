@@ -1,10 +1,8 @@
 # Servo Light Switch Control (ESP8266 + HC-06)
 
-Bluetooth-controlled system for automating **physical wall light switches** using servo motors powered by an **ESP8266** and controlled via an **HC-06 Bluetooth module**.
+Control physical wall light switches remotely using servo motors. The ESP8266 receives commands via HC-06 Bluetooth module and moves servos to flip switches.
 
----
-
-## 🔧 Components
+## Components
 
 * ESP8266 (NodeMCU)
 * HC-06 Bluetooth module
@@ -12,9 +10,7 @@ Bluetooth-controlled system for automating **physical wall light switches** usin
 * External 5V supply for servos
 * Breadboard and jumper wires
 
----
-
-## 🔌 Pin Connections
+## Pin Connections
 
 ### Servos
 
@@ -32,9 +28,7 @@ Bluetooth-controlled system for automating **physical wall light switches** usin
 | VCC       | 3.3V        |
 | GND       | GND         |
 
----
-
-## 📱 Bluetooth Commands
+## Bluetooth Commands
 
 ### Servo 1 (Switch W)
 
@@ -46,26 +40,16 @@ Bluetooth-controlled system for automating **physical wall light switches** usin
 * `ONO` → Turn switch ON
 * `OFFO` → Turn switch OFF
 
----
-
-## ⚡ Features
+## Features
 
 * Wi-Fi disabled for lower power usage
-* Servos **detach after movement** to save power
-* **Auto-centering when Bluetooth connects** (resets servo alignment)
-* Servo always returns to **center (90°)** after switching
+* Servos detach after movement to save power
+* Auto-centering when Bluetooth connects (resets servo alignment)
+* Servo always returns to center (90°) after switching
 
----
-
-## 🧠 Working Principle
+## How it works
 
 1. ESP8266 waits for commands from the HC-06 Bluetooth module.
-2. When Bluetooth activity is detected, both servos move to **center position (90°)**.
+2. When Bluetooth activity is detected, both servos move to center position (90°).
 3. On receiving a command (`ONW`, `OFFW`, `ONO`, `OFFO`), the corresponding servo attaches.
 4. Servo moves to toggle the switch, returns to center, then detaches.
-
----
-
-## 👨‍💻 Author
-
-DIY home automation project using ESP8266, Bluetooth serial communication, and servo-based mechanical switching.
