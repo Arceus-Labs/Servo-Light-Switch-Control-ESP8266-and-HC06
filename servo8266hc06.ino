@@ -1,106 +1,130 @@
 #include <ESP8266WiFi.h>
 #include <Servo.h>
 
-Servo s1;
-Servo s2;
+Servo servoW;
+Servo servoO;
 
-const int servo1Pin = 14;   // D5
-const int servo2Pin = 12;   // D6
+const int SERVO_W_PIN = 14;  // D5
+const int SERVO_O_PIN = 12;  // D6
 
-int center = 90;
-int onPos  = 180;
-int offPos = 0;
+// Servo W angles
+const int CENTER_W = 90;
+const int ON_W = 0;
+const int OFF_W = 180;
 
-bool btActive = false;
+// Servo O angles
+const int CENTER_O = 90;
+const int ON_O = 0;
+const int OFF_O = 180;
+
+// Press extra offset for full switch press
+const int PRESS_EXTRA = 7;
+
+// Movement delays (ms)
+const int MOVE_DELAY = 80;
+const int PRESS_DELAY = 100;
+
+// State tracking
+bool isWOn = false;
+bool isOOn = false;
 
 
-// -------- Function to center both servos --------
-void centerServos() {
-
-  s1.attach(servo1Pin);
-  s2.attach(servo2Pin);
-
-  s1.write(center);
-  s2.write(center);
-
-  delay(250);
-
-  s1.detach();
-  s2.detach();
+void centerBoth() {
+  servoW.write(CENTER_W);
+  servoO.write(CENTER_O);
+  delay(MOVE_DELAY);
 }
 
 
-// -------- Function to toggle a servo --------
-void toggleServo(Servo &servo, int pin, int targetPos) {
-
-  servo.attach(pin);
-
+void pressAndReturn(Servo &servo, int target, int center, int extra) {
+  // Move beyond target with extra pressure
+  servo.write(target + (target > center ? extra : -extra));
+  delay(PRESS_DELAY);
+  
+  // Return to exact target
+  servo.write(target);
+  delay(MOVE_DELAY);
+  
+  // Return to center
   servo.write(center);
-  delay(80);
-
-  servo.write(targetPos);
-  delay(200);
-
-  servo.write(center);
-  delay(80);
-
-  servo.detach();
+  delay(MOVE_DELAY);
 }
 
 
-// -------- Setup --------
 void setup() {
-
-  WiFi.mode(WIFI_OFF);          // disable WiFi
+  WiFi.mode(WIFI_OFF);
   WiFi.forceSleepBegin();
   delay(1);
 
   Serial.begin(9600);
-  Serial.setTimeout(50);        // prevent 1s blocking delay
+  Serial.setTimeout(50);
 
-  centerServos();               // initial alignment
+  // Attach servos once
+  servoW.attach(SERVO_W_PIN);
+  servoO.attach(SERVO_O_PIN);
+
+  centerBoth();
 }
 
 
-// -------- Main Loop --------
 void loop() {
-
   if (Serial.available()) {
-
-    if (!btActive) {
-      centerServos();           // auto reset when bluetooth starts
-      btActive = true;
-      Serial.println("BT Connected - Servos Centered");
-    }
-
     String cmd = Serial.readString();
     cmd.trim();
     cmd.toUpperCase();
 
+    // Always center first
+    centerBoth();
 
-    if (cmd == "ONW") {
-      toggleServo(s1, servo1Pin, offPos);
-      Serial.println("ONW done");
+    if (cmd == "W:ON") {
+      if (!isWOn) {
+        pressAndReturn(servoW, ON_W, CENTER_W, PRESS_EXTRA);
+        isWOn = true;
+        Serial.println("W ON done");
+      }
     }
-
-    else if (cmd == "OFFW") {
-      toggleServo(s1, servo1Pin, onPos);
-      Serial.println("OFFW done");
+    else if (cmd == "W:OFF") {
+      if (isWOn) {
+        pressAndReturn(servoW, OFF_W, CENTER_W, PRESS_EXTRA);
+        isWOn = false;
+        Serial.println("W OFF done");
+      }
     }
-
-    else if (cmd == "ONO") {
-      toggleServo(s2, servo2Pin, offPos);
-      Serial.println("ONO done");
+    else if (cmd == "O:ON") {
+      if (!isOOn) {
+        pressAndReturn(servoO, ON_O, CENTER_O, PRESS_EXTRA);
+        isOOn = true;
+        Serial.println("O ON done");
+      }
     }
-
-    else if (cmd == "OFFO") {
-      toggleServo(s2, servo2Pin, onPos);
-      Serial.println("OFFO done");
+    else if (cmd == "O:OFF") {
+      if (isOOn) {
+        pressAndReturn(servoO, OFF_O, CENTER_O, PRESS_EXTRA);
+        isOOn = false;
+        Serial.println("O OFF done");
+      }
     }
-  }
-
-  else {
-    delay(3000);
-    btActive = false;           // reset bluetooth state
+    else if (cmd == "ALLON") {
+      if (!isWOn) {
+        pressAndReturn(servoW, ON_W, CENTER_W, PRESS_EXTRA);
+        isWOn = true;
+      }
+      if (!isOOn) {
+        pressAndReturn(servoO, ON_O, CENTER_O, PRESS_EXTRA);
+        isOOn = true;
+      }
+      Serial.println("ALL ON done");
+    }
+    else if (cmd == "ALLOFF") {
+      if (isWOn) {
+        pressAndReturn(servoW, OFF_W, CENTER_W, PRESS_EXTRA);
+        isWOn = false;
+      }
+      if (isOOn) {
+        pressAndReturn(servoO, OFF_O, CENTER_O, PRESS_EXTRA);
+        isOOn = false;
+      }
+      Serial.println("ALL OFF done");
+    }
   }
 }
