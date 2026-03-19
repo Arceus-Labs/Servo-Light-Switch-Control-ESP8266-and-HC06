@@ -77,53 +77,37 @@ void loop() {
     centerBoth();
 
     if (cmd == "W:ON") {
-      if (!isWOn) {
-        pressAndReturn(servoW, ON_W, CENTER_W, PRESS_EXTRA);
-        isWOn = true;
-        Serial.println("W ON done");
-      }
+      pressAndReturn(servoW, ON_W, CENTER_W, PRESS_EXTRA);
+      isWOn = true;
+      Serial.println("W ON done");
     }
     else if (cmd == "W:OFF") {
-      if (isWOn) {
-        pressAndReturn(servoW, OFF_W, CENTER_W, PRESS_EXTRA);
-        isWOn = false;
-        Serial.println("W OFF done");
-      }
+      pressAndReturn(servoW, OFF_W, CENTER_W, PRESS_EXTRA);
+      isWOn = false;
+      Serial.println("W OFF done");
     }
     else if (cmd == "O:ON") {
-      if (!isOOn) {
-        pressAndReturn(servoO, ON_O, CENTER_O, PRESS_EXTRA);
-        isOOn = true;
-        Serial.println("O ON done");
-      }
+      pressAndReturn(servoO, ON_O, CENTER_O, PRESS_EXTRA);
+      isOOn = true;
+      Serial.println("O ON done");
     }
     else if (cmd == "O:OFF") {
-      if (isOOn) {
-        pressAndReturn(servoO, OFF_O, CENTER_O, PRESS_EXTRA);
-        isOOn = false;
-        Serial.println("O OFF done");
-      }
+      pressAndReturn(servoO, OFF_O, CENTER_O, PRESS_EXTRA);
+      isOOn = false;
+      Serial.println("O OFF done");
     }
     else if (cmd == "ALLON") {
-      if (!isWOn) {
-        pressAndReturn(servoW, ON_W, CENTER_W, PRESS_EXTRA);
-        isWOn = true;
-      }
-      if (!isOOn) {
-        pressAndReturn(servoO, ON_O, CENTER_O, PRESS_EXTRA);
-        isOOn = true;
-      }
+      pressAndReturn(servoW, ON_W, CENTER_W, PRESS_EXTRA);
+      pressAndReturn(servoO, ON_O, CENTER_O, PRESS_EXTRA);
+      isWOn = true;
+      isOOn = true;
       Serial.println("ALL ON done");
     }
     else if (cmd == "ALLOFF") {
-      if (isWOn) {
-        pressAndReturn(servoW, OFF_W, CENTER_W, PRESS_EXTRA);
-        isWOn = false;
-      }
-      if (isOOn) {
-        pressAndReturn(servoO, OFF_O, CENTER_O, PRESS_EXTRA);
-        isOOn = false;
-      }
+      pressAndReturn(servoW, OFF_W, CENTER_W, PRESS_EXTRA);
+      pressAndReturn(servoO, OFF_O, CENTER_O, PRESS_EXTRA);
+      isWOn = false;
+      isOOn = false;
       Serial.println("ALL OFF done");
     }
   }
